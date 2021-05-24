@@ -1,0 +1,220 @@
+The first intuiton is to regress SALES against every variable.
+Call:
+lm(formula = data1$SALES ~ ., data = data1)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-27068996  -3897582   -318601   4149793  14655774 
+
+Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       -1.315e+08  4.345e+07  -3.027  0.00292 ** 
+DATE               6.850e-02  8.580e-03   7.984 3.73e-13 ***
+`CORRECTED PRICE` -6.104e+03  6.089e+03  -1.003  0.31774    
+TOURISM            2.845e+07  2.113e+06  13.463  < 2e-16 ***
+RAMADAN           -6.110e+05  8.268e+04  -7.390 1.02e-11 ***
+FOOTBALL           5.497e+04  1.207e+05   0.455  0.64943    
+`TU/EP PARITY`     9.723e+07  3.571e+07   2.722  0.00726 ** 
+`RAKI/EP PARITY`   8.392e+04  3.719e+05   0.226  0.82180    
+`Cola/EP Parity`   8.239e+06  4.878e+06   1.689  0.09330 .  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 6355000 on 147 degrees of freedom
+  (12 observations deleted due to missingness)
+Multiple R-squared:  0.8561,    Adjusted R-squared:  0.8483 
+F-statistic: 109.4 on 8 and 147 DF,  p-value: < 2.2e-16
+
+Sales regressed against every other factor came up with a low p value with an ADJR2 of 84.83%.  RAKI/EP PARITY, FOOTBALL, and CORRECTED PRICE yielded high p-values, therefore first intuiton is to remove these three factors and the corresponding regression model is:
+MODEL_1:
+Coefficients:
+     (Intercept)           TOURISM              DATE           RAMADAN    `TU/EP PARITY`  
+      -1.550e+08         2.820e+07         7.117e-02        -6.154e+05         1.143e+08  
+`Cola/EP Parity`  
+       1.007e+07 
+ (Intercept)                        -1.550e+08  3.254e+07  -4.764 4.44e-06 ***
+data$DATE                           7.117e-02  7.108e-03  10.013  < 2e-16 ***
+datawithoutseason$TOURISM           2.820e+07  1.979e+06  14.255  < 2e-16 ***
+datawithoutseason$RAMADAN          -6.154e+05  8.209e+04  -7.497 5.27e-12 ***
+datawithoutseason$`TU/EP PARITY`    1.143e+08  2.949e+07   3.875 0.000159 ***
+datawithoutseason$`Cola/EP Parity`  1.007e+07  4.270e+06   2.358 0.019686 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 6318000 on 150 degrees of freedom
+  (12 observations deleted due to missingness)
+Multiple R-squared:  0.8549,    Adjusted R-squared:  0.8501 
+F-statistic: 176.8 on 5 and 150 DF,  p-value: < 2.2e-16
+When the complete data is regressed step-wise, both forward and backward regression ended up with the same model which is coherent with our first intuiton.
+
+MODEL_1:
+Step:  AIC=4891.46
+data$SALES ~ TOURISM + DATE + RAMADAN + `TU/EP PARITY` + `Cola/EP Parity`
+
+                    Df  Sum of Sq        RSS    AIC
+<none>                            5.9873e+15 4891.5
++ `CORRECTED PRICE`  1 4.1365e+13 5.9459e+15 4892.4
++ FOOTBALL           1 6.5248e+12 5.9808e+15 4893.3
++ `RAKI/EP PARITY`   1 3.1848e+12 5.9841e+15 4893.4
+
+Call:
+lm(formula = data$SALES ~ TOURISM + DATE + RAMADAN + `TU/EP PARITY` + 
+    `Cola/EP Parity`, data = datawithoutseason)
+
+Then in order to indicate seasonality, dummy variables are added. In a specific month, the seasonality matrix has the value 1 for that month and 0 for every other month. (October is the month fixed since it is a stagnant month.)When this new data is regressed ,the result:
+
+MODEL_2:
+Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       -1.164e+08  3.704e+07  -3.141 0.002066 ** 
+DATE               8.167e-02  7.695e-03  10.614  < 2e-16 ***
+`CORRECTED PRICE` -1.204e+04  5.140e+03  -2.343 0.020588 *  
+TOURISM            1.304e+07  3.620e+06   3.602 0.000441 ***
+RAMADAN           -6.211e+05  7.067e+04  -8.789 5.84e-15 ***
+FOOTBALL          -1.027e+05  1.297e+05  -0.792 0.429731    
+`TU/EP PARITY`     7.673e+07  3.043e+07   2.522 0.012836 *  
+`RAKI/EP PARITY`   4.291e+05  3.116e+05   1.377 0.170779    
+`Cola/EP Parity`   6.230e+06  4.069e+06   1.531 0.128019    
+`1`               -4.008e+06  2.666e+06  -1.503 0.135076    
+`2`               -1.733e+06  2.644e+06  -0.656 0.513174    
+`3`                3.158e+06  2.499e+06   1.263 0.208654    
+`4`                3.082e+06  2.200e+06   1.401 0.163482    
+`5`                7.641e+06  2.038e+06   3.749 0.000262 ***
+`6`                9.920e+06  2.442e+06   4.062 8.17e-05 ***
+`7`                1.417e+07  2.106e+06   6.729 4.36e-10 ***
+`8`                1.433e+07  2.102e+06   6.816 2.78e-10 ***
+`9`                5.085e+06  2.072e+06   2.454 0.015403 *  
+`10`                      NA         NA      NA       NA    
+`11`              -1.296e+06  2.531e+06  -0.512 0.609487    
+`12`              -1.651e+06  2.671e+06  -0.618 0.537572    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 5163000 on 136 degrees of freedom
+  (12 observations deleted due to missingness)
+Multiple R-squared:  0.9121,    Adjusted R-squared:  0.8999 
+F-statistic: 74.32 on 19 and 136 DF,  p-value: < 2.2e-16
+
+The increased adjusted R-square from 85% to 90% value is a good indicator that the regression is developed since adjusted R-sqaure penalizes additional variables. In our new model, FOOTBALL, RAKI/EP PARITY, Cola/EP PARITY, and the months, 1,2,3,4,11,12 are the factors with high p-values that we are reluctant to keep them. 
+MODEL_3:
+Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+(Intercept)            -6.024e+07  3.430e+07  -1.756 0.081172 .  
+data$DATE               7.445e-02  6.580e-03  11.314  < 2e-16 ***
+data$`CORRECTED PRICE` -1.755e+04  4.939e+03  -3.554 0.000513 ***
+data$TOURISM            1.753e+07  2.547e+06   6.884 1.63e-10 ***
+data$RAMADAN           -5.635e+05  6.914e+04  -8.150 1.55e-13 ***
+data$`TU/EP PARITY`     3.712e+07  2.935e+07   1.265 0.208029    
+data$`5`                6.450e+06  1.884e+06   3.424 0.000802 ***
+data$`6`                8.015e+06  1.903e+06   4.211 4.44e-05 ***
+data$`7`                1.265e+07  1.995e+06   6.342 2.71e-09 ***
+data$`8`                1.309e+07  2.051e+06   6.384 2.19e-09 ***
+data$`9`                4.018e+06  2.001e+06   2.008 0.046506 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 5419000 on 145 degrees of freedom
+  (12 observations deleted due to missingness)
+Multiple R-squared:  0.8968,    Adjusted R-squared:  0.8897 
+F-statistic:   126 on 10 and 145 DF,  p-value: < 2.2e-16
+
+When the mentioned factors are removed, ADJR2 decreased from 90% to 89% which indicates a worse model. Therefore step-wise regression should be used to determine the coefficients which results with:
+MODEL_4:
+Call:
+lm(formula = data$SALES ~ DATE + `CORRECTED PRICE` + TOURISM + 
+    RAMADAN + `TU/EP PARITY` + `RAKI/EP PARITY` + `Cola/EP Parity` + 
+    `1` + `3` + `4` + `5` + `6` + `7` + `8` + `9`, data = data)
+Coefficients:
+      (Intercept)               DATE  `CORRECTED PRICE`            TOURISM            RAMADAN  
+       -1.171e+08          7.978e-02         -1.193e+04          1.463e+07         -6.263e+05  
+   `TU/EP PARITY`   `RAKI/EP PARITY`   `Cola/EP Parity`                `1`                `3`  
+        7.694e+07          4.190e+05          6.669e+06         -2.599e+06          4.430e+06  
+              `4`                `5`                `6`                `7`                `8`  
+        4.055e+06          8.213e+06          9.391e+06          1.433e+07          1.473e+07  
+              `9`  
+        5.519e+06  
+                         Estimate Std. Error t value Pr(>|t|)    
+(Intercept)            -1.171e+08  3.642e+07  -3.214  0.00163 ** 
+data$DATE               7.978e-02  7.162e-03  11.139  < 2e-16 ***
+data$`CORRECTED PRICE` -1.193e+04  5.053e+03  -2.361  0.01959 *  
+data$TOURISM            1.463e+07  2.578e+06   5.676 7.65e-08 ***
+data$RAMADAN           -6.263e+05  6.863e+04  -9.126 7.01e-16 ***
+data$`TU/EP PARITY`     7.694e+07  2.995e+07   2.569  0.01125 *  
+data$`RAKI/EP PARITY`   4.190e+05  3.027e+05   1.384  0.16857    
+data$`Cola/EP Parity`   6.669e+06  3.994e+06   1.670  0.09717 .  
+data$`1`               -2.599e+06  1.645e+06  -1.580  0.11640    
+data$`3`                4.430e+06  1.652e+06   2.682  0.00820 ** 
+data$`4`                4.055e+06  1.660e+06   2.442  0.01585 *  
+data$`5`                8.213e+06  1.862e+06   4.411 2.03e-05 ***
+data$`6`                9.391e+06  1.869e+06   5.026 1.51e-06 ***
+data$`7`                1.433e+07  1.963e+06   7.302 1.95e-11 ***
+data$`8`                1.473e+07  2.011e+06   7.329 1.69e-11 ***
+data$`9`                5.519e+06  1.962e+06   2.813  0.00561 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 5111000 on 140 degrees of freedom
+  (12 observations deleted due to missingness)
+Multiple R-squared:  0.9114,    Adjusted R-squared:  0.9019 
+F-statistic: 95.99 on 15 and 140 DF,  p-value: < 2.2e-16
+
+
+This regression came up with an increased ADJR2 value of 0.9019 which shows development. 
+
+An alternative way of deciding the variables is to plot the leaps function on data which tells us which factors to be used simultaneously.
+Regression with these variables yields: 
+
+MODEL_5:
+Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+(Intercept)            -1.532e+07  4.709e+06  -3.254 0.001416 ** 
+data$DATE               6.649e-02  4.430e-03  15.007  < 2e-16 ***
+data$`CORRECTED PRICE` -2.052e+04  4.270e+03  -4.806 3.78e-06 ***
+data$TOURISM            1.952e+07  2.151e+06   9.074 7.20e-16 ***
+data$RAMADAN           -5.542e+05  6.906e+04  -8.025 3.05e-13 ***
+data$`1`               -4.171e+06  1.666e+06  -2.504 0.013384 *  
+data$`5`                5.066e+06  1.720e+06   2.946 0.003753 ** 
+data$`6`                6.634e+06  1.731e+06   3.833 0.000187 ***
+data$`7`                1.135e+07  1.777e+06   6.386 2.14e-09 ***
+data$`8`                1.169e+07  1.815e+06   6.441 1.62e-09 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 5402000 on 146 degrees of freedom
+  (12 observations deleted due to missingness)
+Multiple R-squared:  0.8968,    Adjusted R-squared:  0.8904 
+F-statistic: 140.9 on 9 and 146 DF,  p-value: < 2.2e-16
+
+The results has an ADJR2 of 0.8904 which is high but not the highest so far. 
+All in all, via various methods like simple observation,addition of seasonality, step-wise regression and plotting leaps functions 5 models were created:
+
+MODEL_1: 
+Multiple R-squared:  0.8549,    Adjusted R-squared:  0.8501 
+F-statistic: 176.8 on 5 and 150 DF,  p-value: < 2.2e-16
+
+
+MODEL_2:
+Multiple R-squared:  0.9121,    Adjusted R-squared:  0.8999 
+F-statistic: 74.32 on 19 and 136 DF,  p-value: < 2.2e-16
+
+MODEL_3:
+
+Multiple R-squared:  0.8968,    Adjusted R-squared:  0.8897 
+F-statistic:   126 on 10 and 145 DF,  p-value: < 2.2e-16
+
+MODEL_4:
+Multiple R-squared:  0.9114,    Adjusted R-squared:  0.9019 
+F-statistic: 95.99 on 15 and 140 DF,  p-value: < 2.2e-16
+
+MODEL_5:
+Multiple R-squared:  0.8968,    Adjusted R-squared:  0.8904 
+F-statistic: 140.9 on 9 and 146 DF,  p-value: < 2.2e-16
+
+
+Clearly MODEL_4 is the model that explains the data relatively better due it’s Adjusted R-squared:  0.9019.
+
+Coefficients of this model gives us the relation:
+
+SALES = 7.978e-02 * DATE + -1.193e+04 * CORRECTED PRICE + 1.463e+07 * TOURISM + -6.263e+05 * RAMADAN +  7.694e+07 * TU/EP PARITY + 4.190e+05 * RAKI/EP PARITY + 6.669e+06 * Cola/EP Parity + “1” * -2.599e+06 + “3” *  4.430e+06 + “4” * 4.055e+06 + “5” * 8.213e+06 + “6” * 9.391e+06 + “7” * 1.433e+07 + “8” * 1.473e+07 + ”9” * 5.519e+06
+
+Where “n” stands for the nth month of the year starting from (n=1) = january.
